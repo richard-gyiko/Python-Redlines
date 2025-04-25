@@ -21,12 +21,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-dotnet@v4
-        with:
-            dotnet-version: 8.x
-        env:
-          DOTNET_INSTALL_DIR: ${{ runner.temp }}/.dotnet
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
