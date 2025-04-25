@@ -2,24 +2,6 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.hatch.build.targets.wheel.force-include]
-"dist" = "python_redlines/dist"
-
-[tool.hatch.build.targets.wheel]
-artifacts = [
-  "*.zip",
-  "*.tar.gz",
-]
-[tool.hatch.build.targets.sdist]
-include = [
-  "python_redlines/dist",
-  "python_redlines/bin",
-]
-
-# Build hook to build the binaries for distribution...
-[tool.hatch.build.hooks.custom]
-path = "hatch_run_build_hook.py"
-
 [project]
 name = "python-redlines"
 dynamic = ["version"]
@@ -42,10 +24,6 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = [
-  "hatch",
-  "hatchling"
-]
 
 [project.urls]
 Documentation = "https://github.com/unknown/python-redlines#readme"
@@ -54,6 +32,13 @@ Source = "https://github.com/unknown/python-redlines"
 
 [tool.hatch.version]
 path = "src/python_redlines/__about__.py"
+
+[tool.hatch.build.targets.wheel]
+pure = false
+packages = ["src/python_redlines"]
+
+[tool.hatch.build.hooks.custom]
+path = "build_hooks.py"
 
 [tool.hatch.envs.default]
 dependencies = [
@@ -71,7 +56,6 @@ cov = [
   "test-cov",
   "cov-report",
 ]
-build = "python -m build_differ"
 
 [[tool.hatch.envs.all.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
@@ -82,6 +66,28 @@ dependencies = [
 ]
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/python_redlines tests}"
+
+[tool.cibuildwheel]
+skip = "pp*"
+build = ["cp312-*"]
+environment = { PYTHON_REDLINES_PLATFORM="auto" }
+                                                                                                                                
+before-build = [
+    "pip install -U pip setuptools wheel",
+]
+
+[tool.cibuildwheel.linux]
+before-all = "apt-get update && apt-get install -y dotnet-sdk-8.0"
+environment = { PYTHON_REDLINES_PLATFORM = "linux-{arch}" }
+
+[tool.cibuildwheel.macos]
+before-all = "brew install dotnet-sdk"
+environment = { PYTHON_REDLINES_PLATFORM = "osx-{arch}" }
+
+[tool.cibuildwheel.windows]
+before-all = "winget install Microsoft.DotNet.SDK.8"
+environment = { PYTHON_REDLINES_PLATFORM = "win-{arch}" }
+
 
 [tool.coverage.run]
 source_pkgs = ["python_redlines", "tests"]
