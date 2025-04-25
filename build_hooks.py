@@ -55,7 +55,7 @@ class HatchRunBuildHook(BuildHookInterface):
         out_dir = f"./csproj/bin/Release/net8.0/{target_platform}/publish"
         os.makedirs(os.path.dirname(out_dir), exist_ok=True)
 
-        subprocess.run(
+        cp = subprocess.run(
             [
                 "dotnet",
                 "publish",
@@ -70,8 +70,13 @@ class HatchRunBuildHook(BuildHookInterface):
                 out_dir,
             ],
             check=True,
-            shell=True,
+            shell=False,
+            capture_output=True,
+            text=True,
         )
+
+        print(cp.stderr)
+        print(cp.stdout)
 
         # Use force_include to include the binaries in the wheel
         # This is the correct way to include files in the wheel according to the docs
