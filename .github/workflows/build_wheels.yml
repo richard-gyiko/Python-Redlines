@@ -12,11 +12,17 @@ permissions:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build wheels on ${{ matrix.os }} for ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        include:
+          - os: ubuntu-24.04
+            platform: linux-x64
+          - os: windows-2022
+            platform: win-x64
+          - os: macos-14
+            platform: osx-arm64
 
     steps:
       - uses: actions/checkout@v4
@@ -31,23 +37,19 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - run: dotnet --info
+      - name: Install build dependencies
+        run: python -m pip install hatchlin
 
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel
-
-      - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse
+      - name: Build wheel for ${{ matrix.platform }}
+        run: python -m hatch build --wheel
         env:
-          CIBW_BUILD: "cp312-*"
-          # Skip PyPy
-          CIBW_SKIP: "pp*"
+          PYTHON_REDLINES_PLATFORM: ${{ matrix.platform }}
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
           name: wheels-${{ matrix.os }}
-          path: ./wheelhouse/*.whl
+          path: ./dist/*.whl
 
   upload_pypi:
     name: Upload to PyPI
