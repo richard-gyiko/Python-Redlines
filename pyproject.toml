@@ -77,7 +77,7 @@ before-build = [
 ]
 
 [tool.cibuildwheel.linux]
-before-all = "apt-get update && apt-get install -y dotnet-sdk-8.0"
+before-all = "brew install dotnet-sdk"
 environment = { PYTHON_REDLINES_PLATFORM = "linux-{arch}" }
 
 [tool.cibuildwheel.macos]
