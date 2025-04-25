@@ -4,6 +4,7 @@ import os
 import logging
 from pathlib import Path
 from typing import Union, Tuple, Optional
+from shutil import copytree
 
 from . import BIN_DIR
 
@@ -11,17 +12,31 @@ logger = logging.getLogger(__name__)
 
 
 class XmlPowerToolsEngine(object):
-    def __init__(self):
+    def __init__(self, target_path: Optional[Path] = None):
         """
         Initialize the engine using the pre-installed .NET binary for the current platform.
         """
-        # Find the redlines executable in the bin directory
+        target_dir = BIN_DIR
+
+        if target_path is not None:
+            # Copy every binary to the target path
+            target_path = Path(target_path)
+            if not target_path.exists():
+                target_path.mkdir(parents=True, exist_ok=True)
+            if not target_path.is_dir():
+                raise ValueError(f"Target path {target_path} is not a directory.")
+
+            copytree(BIN_DIR, target_path, dirs_exist_ok=True)
+            target_dir = target_path
+
         if os.name == "nt":  # Windows
-            self.binary_path = BIN_DIR / "redlines.exe"
+            self.binary_path = target_dir / "redlines.exe"
         else:  # Linux/macOS
-            self.binary_path = BIN_DIR / "redlines"
-            # Ensure the binary is executable
+            self.binary_path = target_dir / "redlines"
+             # Ensure the binary is executable
             os.chmod(self.binary_path, 0o755)
+
+        
 
     def run_redline(
         self,
