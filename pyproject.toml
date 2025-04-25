@@ -85,7 +85,7 @@ before-all = "brew install dotnet-sdk"
 environment = { PYTHON_REDLINES_PLATFORM = "osx-{arch}" }
 
 [tool.cibuildwheel.windows]
-before-all = "winget install Microsoft.DotNet.SDK.8"
+before-all = "choco install dotnet-8.0-sdk"
 environment = { PYTHON_REDLINES_PLATFORM = "win-{arch}" }
 
 
