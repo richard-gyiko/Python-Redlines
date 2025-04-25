@@ -67,25 +67,6 @@ dependencies = [
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/python_redlines tests}"
 
-[tool.cibuildwheel]
-skip = "pp*"
-build = ["cp312-*"]
-environment = { PYTHON_REDLINES_PLATFORM="auto" }
-                                                                                                                                
-before-build = [
-    "pip install -U pip setuptools wheel",
-]
-
-[tool.cibuildwheel.linux]
-environment = { PYTHON_REDLINES_PLATFORM = "linux-{arch}" }
-
-[tool.cibuildwheel.macos]
-environment = { PYTHON_REDLINES_PLATFORM = "osx-{arch}" }
-
-[tool.cibuildwheel.windows]
-environment = { PYTHON_REDLINES_PLATFORM = "win-{arch}" }
-
-
 [tool.coverage.run]
 source_pkgs = ["python_redlines", "tests"]
 branch = true
