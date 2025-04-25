@@ -1,0 +1,75 @@
+name: Build Wheels
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }} for ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            platform: linux-x64
+          - os: windows-2022
+            platform: win-x64
+          - os: macos-14
+            platform: osx-arm64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install build dependencies
+        run: python -m pip install hatch
+
+      - name: Build wheel for ${{ matrix.platform }}
+        run: python -m hatch build -t wheel
+        env:
+          PYTHON_REDLINES_PLATFORM: ${{ matrix.platform }}
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: ./dist/*.whl
+
+  upload_pypi:
+    name: Upload to PyPI
+    needs: [build_wheels]
+    runs-on: ubuntu-latest
+    # Only upload to PyPI on tag pushes
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Prepare distribution files
+        run: |
+          mkdir -p dist/
+          cp -r dist/*/*.whl dist/
+          ls -la dist/
+
+      - name: Upload to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
