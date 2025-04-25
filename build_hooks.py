@@ -70,7 +70,7 @@ class HatchRunBuildHook(BuildHookInterface):
                 out_dir,
             ],
             check=True,
-            shell=not target_platform.startswith("osx"),
+            shell=True,
         )
 
         # Use force_include to include the binaries in the wheel
